@@ -1,0 +1,11 @@
+<RCC>
+    <qresource prefix="/icon">
+        <file>winIcon.png</file>
+        <file>reduction.png</file>
+        <file>enlargement.png</file>
+    </qresource>
+    <qresource prefix="/bg">
+        <file>ppi.bmp</file>
+        <file>ppi.png</file>
+    </qresource>
+</RCC>
