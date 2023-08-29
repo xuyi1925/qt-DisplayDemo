@@ -237,7 +237,7 @@ int Serial_SendData(PORT com_port, const char *data, int len)
     if (Status == FALSE)
         return -1;
     else
-        qDebug() << "send ok";
+//        qDebug() << "send ok";
     return 0;
 }
 

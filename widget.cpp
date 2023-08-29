@@ -10,6 +10,9 @@
 #include <QTimer>
 #include <Windows.h>
 #include <QMessageBox>
+#include <stdio.h>
+
+
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
@@ -99,7 +102,7 @@ Widget::Widget(QWidget *parent)
         command[2] = 0x00;
         command[3] = 0x00;
         command[4] = (byte)ui->labelDisplayArea1->GetRatioValue();
-        Serial_SendData(COM1, command, 5);
+//        Serial_SendData(COM1, command, 5);
     });
 
     // 缩小按钮
@@ -111,7 +114,7 @@ Widget::Widget(QWidget *parent)
         command[2] = 0x00;
         command[3] = 0x00;
         command[4] = (byte)ui->labelDisplayArea1->GetRatioValue();
-        Serial_SendData(COM1, command, 5);
+//        Serial_SendData(COM1, command, 5);
     });
 
     // 局部放大按钮
@@ -255,6 +258,7 @@ void Widget::sendWinPos(int scale, int x, int y)
     command[3] = (byte) (((y >> 8) & 0x0F) | ((x << 4) & 0xF0));
     command[4] = (byte) ((y) & 0xFF);
     Serial_SendData(COM1, command, 5);
+    qDebug() << "signal send success";
 }
 
 // 窗口移动 向FPGA发送显示区域位置信息
@@ -262,11 +266,14 @@ void Widget::moveEvent(QMoveEvent *ev)
 {
     char* command = new char[5];
     command[0] = 'k' - 'a';          // 指令为10表示发送窗口位置
-    command[1] = 0x00;
-    command[2] = (byte) ((ev->pos().x() >> 4) & 0xFF);
-    command[3] = (byte) (((ev->pos().y() >> 8) & 0x0F) | ((ev->pos().x() << 4) & 0xF0));
-    command[4] = (byte) ((ev->pos().y()) & 0xFF);
+    command[1] = (byte) ((ev->pos().x() + ui->labelDisplayArea1->pos().x()>> 8) & 0xFF);
+    command[2] = (byte) ((ev->pos().x() + ui->labelDisplayArea1->pos().x()) & 0xFF);
+    command[3] = (byte) ((ev->pos().y() + ui->labelDisplayArea1->pos().y() >> 8) & 0xFF);
+    command[4] = (byte) ((ev->pos().y() + ui->labelDisplayArea1->pos().y()) & 0xFF);
+    qDebug() << "win_pos_x: " << ev->pos().x();
+    qDebug() << "win_pos_y: " << ev->pos().y();
     Serial_SendData(COM1, command, 5);
+
 }
 
 Widget::~Widget()
