@@ -257,6 +257,7 @@ void Widget::sendWinPos(int scale, int x, int y)
     command[2] = (byte) ((x >> 4) & 0xFF);
     command[3] = (byte) (((y >> 8) & 0x0F) | ((x << 4) & 0xF0));
     command[4] = (byte) ((y) & 0xFF);
+    qDebug() << scale;
     Serial_SendData(COM1, command, 5);
     qDebug() << "signal send success";
 }
