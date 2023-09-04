@@ -29,8 +29,6 @@ Widget::Widget(QWidget *parent)
     // 初始化形状选择框
     InitComboFormSelect();
 
-    // 初始化图层顺序表格
-    InitTableLayerSeq();
 
     // 设置显示区域二背景颜色为黑色
     QPalette palette;
@@ -46,40 +44,18 @@ Widget::Widget(QWidget *parent)
     QTimer* timerMousePos = new QTimer(this);
     timerMousePos->start(50);       // 50毫秒触发一次
     connect(timerMousePos, &QTimer::timeout, this, [=](){
-        char* command = new char[5];
-        command[0] = '4' - '0';          // 指令为4表示发送鼠标位置指令
-        command[1] = (byte) ((ui->labelDisplayArea1->mousePosX >> 8) & 0xFF);
-        command[2] = (byte) ((ui->labelDisplayArea1->mousePosX) & 0xFF);
-        command[3] = (byte) ((ui->labelDisplayArea1->mousePosY >> 8) & 0xFF);
-        command[4] = (byte) ((ui->labelDisplayArea1->mousePosY) & 0xFF);
-        Serial_SendData(COM1, command, 5);
+        if (ui->labelDisplayArea1->mouseIn)
+        {
+            char* command = new char[5];
+            command[0] = '4' - '0';          // 指令为4表示发送鼠标位置指令
+            command[1] = (byte) ((ui->labelDisplayArea1->mousePosX >> 8) & 0xFF);
+            command[2] = (byte) ((ui->labelDisplayArea1->mousePosX) & 0xFF);
+            command[3] = (byte) ((ui->labelDisplayArea1->mousePosY >> 8) & 0xFF);
+            command[4] = (byte) ((ui->labelDisplayArea1->mousePosY) & 0xFF);
+            Serial_SendData(COM1, command, 5);
+        }
     });
 
-    // 图层上移按钮
-    connect(ui->btnLayerUp, &QPushButton::clicked, [=](){
-        int layerSelected = ui->tableLayerSeq->currentRow();
-        if (layerSelected > 0)
-        {
-            QString temp = ui->tableLayerSeq->item(layerSelected, 0)->text();
-            ui->tableLayerSeq->setItem(layerSelected, 0, new QTableWidgetItem(ui->tableLayerSeq->item(layerSelected - 1, 0)->text()));
-            ui->tableLayerSeq->setItem(layerSelected - 1, 0, new QTableWidgetItem(temp));
-            layerSelected -= 1;
-        }
-        ui->tableLayerSeq->setCurrentCell(layerSelected, 0);
-    });
-
-    // 图层下移按钮
-    connect(ui->btnLayerDown, &QPushButton::clicked, [=](){
-        int layerSelected = ui->tableLayerSeq->currentRow();
-        if (layerSelected < ui->tableLayerSeq->rowCount() - 1)
-        {
-            QString temp = ui->tableLayerSeq->item(layerSelected, 0)->text();
-            ui->tableLayerSeq->setItem(layerSelected, 0, new QTableWidgetItem(ui->tableLayerSeq->item(layerSelected + 1, 0)->text()));
-            ui->tableLayerSeq->setItem(layerSelected + 1, 0, new QTableWidgetItem(temp));
-            layerSelected += 1;
-        }
-        ui->tableLayerSeq->setCurrentCell(layerSelected, 0);
-    });
 
     // 文件选择
     connect(ui->btnFileSelect, &QPushButton::clicked, [=](){
@@ -144,16 +120,37 @@ Widget::Widget(QWidget *parent)
     // A显
     connect(ui->btnDisplayA, &QPushButton::clicked, [=](){
        ui->labelDisplayArea2->SwitchDisplayMode(1000, 100, 10, 10, "距离/米", "回波强度/分贝");
+       char* command = new char[5];
+       command[0] = '7' - '0';          // 指令为7表示发送形状指令
+       command[1] = 0x00;
+       command[2] = 0x00;
+       command[3] = 0x00;
+       command[4] = 0x04;
+       Serial_SendData(COM1, command, 5);
     });
 
     // B显
     connect(ui->btnDisplayB, &QPushButton::clicked, [=](){
        ui->labelDisplayArea2->SwitchDisplayMode(360, 120, 12, 6, "方位角/°", "距离/米");
+       char* command = new char[5];
+       command[0] = '7' - '0';          // 指令为7表示发送多窗口指令
+       command[1] = 0x00;
+       command[2] = 0x00;
+       command[3] = 0x00;
+       command[4] = 0x02;
+       Serial_SendData(COM1, command, 5);
     });
 
     // R显
     connect(ui->btnDisplayR, &QPushButton::clicked, [=](){
        ui->labelDisplayArea2->SwitchDisplayMode(1000, 500, 10, 10, "距离/米",  "高度/米");
+       char* command = new char[5];
+       command[0] = '7' - '0';          // 指令为7表示发送多窗口指令
+       command[1] = 0x00;
+       command[2] = 0x00;
+       command[3] = 0x00;
+       command[4] = 0x01;
+       Serial_SendData(COM1, command, 5);
     });
 
     // 形状选择
@@ -204,6 +201,19 @@ Widget::Widget(QWidget *parent)
         }
     });
 
+    ui->ScanningLine->setFixedSize(30,30);
+    //扫描线翻转
+    connect(ui->ScanningLine, &QCheckBox::clicked, [=](){
+        qDebug() << "11111111111111111111";
+        char* command = new char[5];
+        command[0] = 'l' - 'a';         // 指令为11表示扫描线反转
+        command[1] = 0x00;
+        command[2] = 0x00;
+        command[3] = 0x00;
+        command[4] = 0x00;
+        Serial_SendData(COM1, command, 5);
+    });
+
     // 获取屏幕分辨率
     GetResolution();
 
@@ -217,19 +227,6 @@ void Widget::InitComboFormSelect()
     ui->comboFormSelect->addItem("●圆形");
     ui->comboFormSelect->addItem("■正方形");
     ui->comboFormSelect->addItem("★五角星");
-}
-
-void Widget::InitTableLayerSeq()
-{
-    ui->tableLayerSeq->setColumnCount(1);
-    ui->tableLayerSeq->setHorizontalHeaderLabels(QStringList() << "图层叠加顺序");
-    ui->tableLayerSeq->setRowCount(3);
-    QStringList layerList;
-    layerList << "绘图层" << "背景层" << "原图";
-    for (int i = 0; i < 3; i++)
-    {
-        ui->tableLayerSeq->setItem(i, 0, new QTableWidgetItem(layerList[i]));
-    }
 }
 
 // 初始化危险等级滑动条
@@ -267,14 +264,13 @@ void Widget::moveEvent(QMoveEvent *ev)
 {
     char* command = new char[5];
     command[0] = 'k' - 'a';          // 指令为10表示发送窗口位置
-    command[1] = (byte) ((ev->pos().x() + ui->labelDisplayArea1->pos().x()>> 8) & 0xFF);
+    command[1] = (byte) (((ev->pos().x() + ui->labelDisplayArea1->pos().x()) >> 8) & 0xFF);
     command[2] = (byte) ((ev->pos().x() + ui->labelDisplayArea1->pos().x()) & 0xFF);
-    command[3] = (byte) ((ev->pos().y() + ui->labelDisplayArea1->pos().y() >> 8) & 0xFF);
+    command[3] = (byte) (((ev->pos().y() + ui->labelDisplayArea1->pos().y()) >> 8) & 0xFF);
     command[4] = (byte) ((ev->pos().y() + ui->labelDisplayArea1->pos().y()) & 0xFF);
     qDebug() << "win_pos_x: " << ev->pos().x();
     qDebug() << "win_pos_y: " << ev->pos().y();
     Serial_SendData(COM1, command, 5);
-
 }
 
 Widget::~Widget()
