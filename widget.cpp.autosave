@@ -238,7 +238,7 @@ Widget::Widget(QWidget *parent)
             QMessageBox::information(this, "提示", "终点角度需大于起始角度！");
         }
         angleStartValue *= 10;
-        angleEndValue *= 10;        // 角度乘以10再发送，FPGA端精度位0.1度
+        angleEndValue *= 10;            // 角度乘以10再发送，FPGA端精度位0.1度
         char* command = new char[5];
         command[0] = 'm' - 'a';         // 指令为12发送起始和终止角度
         command[1] = (byte) ((angleStartValue >> 8) & 0xFF);
