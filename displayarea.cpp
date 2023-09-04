@@ -135,7 +135,7 @@ void DisplayArea::Enlarge(int ratio)
 {
     if (scale >=64)
     {
-        QMessageBox::information(this, "提示", "当前放大倍数为%d，不能继续放大！", scale);
+        QMessageBox::information(this, "提示", QString("当前放大倍数为%1，不能继续放大！").arg(scale));
     }
     else {
         scale *= ratio;
@@ -151,7 +151,7 @@ void DisplayArea::Reduce(int ratio)
 {
     if (scale <=1)
     {
-        QMessageBox::information(this, "提示", "当前放大倍数为%d，不能继续缩小！", scale);
+        QMessageBox::information(this, "提示", QString("当前放大倍数为%1，不能继续缩小！").arg(scale));
     }
     else {
         scale /= ratio;
