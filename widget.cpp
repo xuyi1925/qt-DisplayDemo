@@ -229,12 +229,12 @@ Widget::Widget(QWidget *parent)
             QMessageBox::information(this, "提示", "起始角度的值需在0-360之间！");
         }
         QString angleEnd = ui->ScanningAngleEnd->text();
-        int angleEndValue = angleStart.toInt();
+        int angleEndValue = angleEnd.toInt();
         if (angleEndValue < 0 || angleEndValue > 360)
         {
             QMessageBox::information(this, "提示", "终点角度的值需在0-360之间！");
         }
-        if (angleEnd <= angleStart) {
+        if (angleEndValue <= angleStartValue) {
             QMessageBox::information(this, "提示", "终点角度需大于起始角度！");
         }
         angleStartValue *= 10;
